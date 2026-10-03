@@ -1,0 +1,6 @@
+@Parcil1_P4Luis_HostAddress = http://localhost:5029
+
+GET {{Parcil1_P4Luis_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
