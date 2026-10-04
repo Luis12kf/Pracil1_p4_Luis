@@ -20,12 +20,9 @@ using (var scope = app.Services.CreateScope())
     await numberService.InitializeAsync();
 }
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
     app.MapOpenApi();
     app.MapScalarApiReference();
-}
+
 
 app.UseHttpsRedirection();
 app.UseAuthorization();

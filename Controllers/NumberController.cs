@@ -42,39 +42,59 @@ public class NumberController : ControllerBase
 }
    
 
-    [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateNumber(int id, [FromBody] NumberRecordSet number)
+   [HttpPut("{id}/{number}")]
+public async Task<IActionResult> UpdateNumber([FromRoute] int id, [FromRoute] int number)
+{
+    try
     {
-        try
-        {
-            dynamic service = _numberService;
-            var updatedNumber = await service.UpdateAsync(id, number);
-            if (updatedNumber != null)
-            {
-                return Ok(updatedNumber);
-            }
-            return NotFound(new { message = "Número no encontrado." });
-        }
-        catch (RuntimeBinderException)
-        {
-            return StatusCode(500, new { message = "La operación de actualización no está disponible." });
-        }
-    }
+        int nuevoResultado = number + number;
+        var record = new NumberRecordSet(number, nuevoResultado);
 
-    [HttpGet]
+        var actualizado = await _numberService.UpdateAsync(id, record);
+
+        if (actualizado == null)
+        {
+            return NotFound(new { message = $"No se encontró el registro con ID {id}." });
+        }
+
+        return Ok(actualizado);
+     
+    }
+    catch (Exception ex)
+    {
+        return StatusCode(500, new { message = "Error interno.", detalle = ex.Message });
+    }
+}
+
     [HttpGet("db/get")]
     public async Task<IActionResult> GetList()
     {
         try
         {
-            dynamic service = _numberService;
-            var numbers = await service.GetListAsync();
+            IEnumerable<NumberRecordGet> numbers = await _numberService.GetListAsync();
             return Ok(numbers);
         }
-        catch (RuntimeBinderException)
-        {
-            return Ok(Array.Empty<NumberRecordSet>());
-        }
+      catch (Exception ex)
+    {
+        return StatusCode(500, new { message = "Error al obtener la lista.", detalle = ex.Message });
+    }
     }
 
+    [HttpGet("db/get/{id}")]
+    public async Task<IActionResult> GetById([FromRoute] int id)
+    {
+        try
+        {
+            var number = await _numberService.GetByIdAsync(id);
+            if (number == null)
+            {
+                return NotFound(new { message = $"No se encontró el registro con ID {id}." });
+            }
+            return Ok(number);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = "Error al obtener el registro.", detalle = ex.Message });
+        }
+    }
 }

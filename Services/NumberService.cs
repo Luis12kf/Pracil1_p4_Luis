@@ -3,14 +3,9 @@ using Dapper;
 using Parcil1_P4Luis.Models;
 
 namespace Parcil1_P4Luis.Services;
-    public class NumberService
+    public class NumberService(IConfiguration configuration)
     {
-        private readonly IConfiguration _configuration;
-
-        public NumberService(IConfiguration configuration)
-        {
-            _configuration = configuration;
-        }
+       readonly IConfiguration _configuration = configuration; 
 
         private SqliteConnection CreateConnection() =>
     
@@ -48,7 +43,7 @@ namespace Parcil1_P4Luis.Services;
             return filasAfectadas > 0;
         }
 
-    public async Task<NumberRecordSet?> UpdateAsync(int id, NumberRecordSet number)
+    public async Task<NumberRecordGet?> UpdateAsync(int id, NumberRecordSet number)
         {
             const string query = @"
                 UPDATE Numeros
@@ -59,11 +54,15 @@ namespace Parcil1_P4Luis.Services;
 
             using var conexion = CreateConnection();
 
-            int filasAfectadas = await conexion.ExecuteAsync(query, new { Id = id, Numero = number.Numero, Resultado = number.Resultado });
+            int filasAfectadas = await conexion.ExecuteAsync(query, new {
+            Id = id,
+            Numero = number.Numero,
+            Resultado = number.Resultado
+        });
 
-            return filasAfectadas > 0 ? await GetByIdSetAsync(id) : null;
-
-            }
+        // Retorna el registro completo actualizado usando GetByIdAsync
+        return filasAfectadas > 0 ? await GetByIdAsync(id) : null;
+        }
         public async Task<NumberRecordGet?> GetByIdAsync(int id)
         {
             const string query = @"
@@ -92,10 +91,5 @@ namespace Parcil1_P4Luis.Services;
             return await conexion.QueryAsync<NumberRecordGet>(query);
         }
 
-    internal async Task GetAllAsync()
-    {
-        throw new NotImplementedException();
 
-
-    }
     }
