@@ -13,7 +13,8 @@ namespace Parcil1_P4Luis.Services;
         }
 
         private SqliteConnection CreateConnection() =>
-            new SqliteConnection(_configuration.GetConnectionString("DefaultConnection"));
+    
+                new SqliteConnection(_configuration.GetConnectionString("DbSqlite_Ds"));
 
         public async Task InitializeAsync()
         {
@@ -36,11 +37,18 @@ namespace Parcil1_P4Luis.Services;
 
             using var conexion = CreateConnection();
 
-            int filasAfectadas = await conexion.ExecuteAsync(query, number);
+            var parametros = new 
+    {
+        Fecha = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
+        Numero = number.Numero, // o number.Numero según cómo llamaste al record
+        Resultado = number.Resultado
+    };
+
+            int filasAfectadas = await conexion.ExecuteAsync(query, parametros);
             return filasAfectadas > 0;
         }
 
-        public async Task<NumberRecordSet?> UpdateAsync(int id, NumberRecordGet number)
+    public async Task<NumberRecordSet?> UpdateAsync(int id, NumberRecordSet number)
         {
             const string query = @"
                 UPDATE Numeros
@@ -50,11 +58,12 @@ namespace Parcil1_P4Luis.Services;
                 WHERE Id = @Id";
 
             using var conexion = CreateConnection();
-            int filasAfectadas = await conexion.ExecuteAsync(query, new { Id = id, number.Numero, number.Resultado });
+
+            int filasAfectadas = await conexion.ExecuteAsync(query, new { Id = id, Numero = number.Numero, Resultado = number.Resultado });
 
             return filasAfectadas > 0 ? await GetByIdSetAsync(id) : null;
-        }
 
+            }
         public async Task<NumberRecordGet?> GetByIdAsync(int id)
         {
             const string query = @"
@@ -83,5 +92,10 @@ namespace Parcil1_P4Luis.Services;
             return await conexion.QueryAsync<NumberRecordGet>(query);
         }
 
-    
+    internal async Task GetAllAsync()
+    {
+        throw new NotImplementedException();
+
+
+    }
     }
